@@ -25,23 +25,27 @@
 
 #include <cstdlib>
 
-#include "CSV.h"
+#include "Angle.h"
+#include "STB/CSV.h"
 #include "STB/Vector3.h"
 
 
 enum class Attr
 {
+   NAME,
    MAG,
    X,
    Y,
    Z,
    VX,
    VY,
-   VZ
+   VZ,
+   DECL,
+   RA
 };
 
 
-class Star : public CSV::Document<Attr>::AttrCallBack
+class Star : public STB::CSV::Document<Attr>::AttrCallBack
 {
 public:
    Star() = default;
@@ -52,15 +56,24 @@ public:
    {
       switch(attr)
       {
-      case Attr::MAG: mag   = strtod(value, nullptr); break;
-      case Attr::X:   pos.x = strtod(value, nullptr); break;
-      case Attr::Y:   pos.y = strtod(value, nullptr); break;
-      case Attr::Z:   pos.z = strtod(value, nullptr); break;
-      case Attr::VX:  vel.x = strtod(value, nullptr); break;
-      case Attr::VY:  vel.y = strtod(value, nullptr); break;
-      case Attr::VZ:  vel.z = strtod(value, nullptr); break;
+      case Attr::NAME:
+         name = value;
+         is_the_sun = name == "Sol";
+         break;
+
+      case Attr::MAG:  mag   = strtod(value, nullptr); break;
+      case Attr::X:    pos.x = strtod(value, nullptr); break;
+      case Attr::Y:    pos.y = strtod(value, nullptr); break;
+      case Attr::Z:    pos.z = strtod(value, nullptr); break;
+      case Attr::VX:   vel.x = strtod(value, nullptr); break;
+      case Attr::VY:   vel.y = strtod(value, nullptr); break;
+      case Attr::VZ:   vel.z = strtod(value, nullptr); break;
+      case Attr::DECL: decl  = Angle::rad(strtod(value, nullptr)); break;
+      case Attr::RA:   ra    = Angle::rad(strtod(value, nullptr)); break;
       }
    }
+
+   bool isTheSun() const { return is_the_sun; }
 
    float getMagnitude() const { return mag; }
 
@@ -68,10 +81,23 @@ public:
 
    const Vector& getVelocity() const { return vel; }
 
+   void debug(FILE* fp = stdout) const
+   {
+      printf("%s: pos = {%g, %g, %g} vel = {%g, %g, %g} ra=%.15f decl=%.15f mag=%f\n",
+             name.c_str(),
+             pos.x, pos.y, pos.z,
+             vel.x, vel.y, vel.z,
+             double(ra.deg()), double(decl.deg()), mag);
+   }
+
 private:
-   float  mag{0.0};
-   Vector pos{0.0, 0.0, 0.0};
-   Vector vel{0.0, 0.0, 0.0};
+   std::string name;
+   float       mag{0.0};
+   Vector      pos{0.0, 0.0, 0.0};
+   Vector      vel{0.0, 0.0, 0.0};
+   Angle       decl;
+   Angle       ra;
+   bool        is_the_sun{false};
 };
 
 #endif // STAR_H
