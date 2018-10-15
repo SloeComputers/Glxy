@@ -35,10 +35,14 @@ public:
 
    static const unsigned SECONDS_PER_DAY    = HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
 
-   Time()
+   Time(bool utc_)
+      : utc(utc_)
    {
       setNow();
    }
+
+   //! Is time Universal Co-oridinated time
+   bool isUTC() const { return utc; }
 
    //! Returns the Julian year (e.g. 2018)
    unsigned getYear() const { return year; }
@@ -52,8 +56,8 @@ public:
    //! Returns the month (1-12)
    unsigned getMonth() const { return month; }
 
-   //! Returns Co-oridinated Universal Time hours (0-23)
-   signed getUTCHour() const { return hour; }
+   //! Returns Time hours (0-23)
+   signed getHour() const { return hour; }
 
    //! Returns minutes (0-59)
    signed getMinute() const { return minute; }
@@ -69,7 +73,7 @@ public:
       return true;
    }
 
-   unsigned getDaysPerYear() const
+   signed getDaysPerYear() const
    {
       return isLeapYear() ? 366 : 365;
    }
@@ -103,8 +107,8 @@ public:
       }
    }
 
-   //! Set the Universal Co-ordinated Time
-   void setUTC(signed hour_, signed minute_, signed second_ = 0)
+   //! Set the time
+   void setTime(signed hour_, signed minute_, signed second_ = 0)
    {
       hour   = hour_;
       minute = minute_;
@@ -123,23 +127,32 @@ public:
    //! Update to the current time
    void setNow()
    {
-      time_t t = ::time(nullptr);
+      time_t    t = ::time(nullptr);
       struct tm tm;
-      ::gmtime_r(&t, &tm);
-      assert(tm.tm_isdst == 0);
+
+      if (utc)
+      {
+          ::gmtime_r(&t, &tm);
+          assert(tm.tm_isdst == 0);
+      }
+      else
+      {
+          ::localtime_r(&t, &tm);
+      }
 
       setDate(1900 + tm.tm_year, tm.tm_yday);
-      setUTC(tm.tm_hour, tm.tm_min, tm.tm_sec);
+      setTime(tm.tm_hour, tm.tm_min, tm.tm_sec);
    }
 
 private:
-   unsigned year{1970};
-   signed   yday{0};
-   unsigned mday{0};
-   unsigned month{0};
-   signed   hour{0};
-   signed   minute{0};
-   signed   second{0};
+   const bool utc{false};
+   unsigned   year{1970};
+   signed     yday{0};
+   unsigned   mday{0};
+   unsigned   month{0};
+   signed     hour{0};
+   signed     minute{0};
+   signed     second{0};
 };
 
 #endif // TIME_H

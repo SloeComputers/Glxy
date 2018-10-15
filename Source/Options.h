@@ -20,42 +20,22 @@
 // SOFTWARE.
 //------------------------------------------------------------------------------
 
-#include "STB/ConsoleApp.h"
+#ifndef OPTIONS_H
+#define OPTIONS_H
 
-#include "Glxy.h"
+#include <string>
 
-#define  PROGRAM         "Glxy"
-#define  DESCRIPTION     "Star database viewer"
-#define  LINK            "https://github.com/AnotherJohnH/"
-#define  COPYRIGHT_YEAR  "2018"
-#define  AUTHOR          "John D. Haughton"
-#define  VERSION         PROJ_VERSION
+#include "STB/Option.h"
 
-
-class GlxyApp : public STB::ConsoleApp
+struct Options
 {
-private:
-   Options options;
-
-   virtual int startConsoleApp() override
-   {
-      options.filename = "/Users/johnh/Data/Astronomy/Data/hygdata_v3.csv";
-
-      Glxy glxy{options, PROGRAM};
-
-      return glxy.eventLoop();
-   }
-
-public:
-   GlxyApp(int argc, const char* argv[])
-      : ConsoleApp(PROGRAM, DESCRIPTION, LINK, AUTHOR, VERSION, COPYRIGHT_YEAR)
-   {
-      parseArgsAndStart(argc, argv);
-   }
+   STB::Option<bool>        debug{         'd', "debug",    "Enable debug",      false};
+   STB::Option<unsigned>    width{         'w', "width",    "Width (pixels)",    1500};
+   STB::Option<unsigned>    height{        'h', "height",   "Height (pixels)",   1500};
+   STB::Option<bool>        full_screen{   'f', "full",     "Full screen",       false};
+   STB::Option<double>      latitude_degs{ 'a', "lat",      "Latitude (degs)",   51.5};
+   STB::Option<double>      longitude_degs{'o', "lon",      "Longitude (degs)",  0.0};
+   STB::Option<const char*> filename{      'D', "database", "Database CSV file", "Data/hygdata_v3.csv"};
 };
 
-
-int main(int argc, const char* argv[])
-{
-   GlxyApp(argc, argv);
-}
+#endif

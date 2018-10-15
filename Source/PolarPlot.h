@@ -57,6 +57,11 @@ public:
       rotation = rotation_;
    }
 
+   void setZenith(Angle zenith_)
+   {
+      zenith = zenith_;
+   }
+
    Angle getRotation() const
    {
       return rotation;
@@ -152,6 +157,7 @@ private:
    Angle        max_decl{90.0, Angle::Unit::DEG};
 
    Angle        rotation;
+   Angle        zenith;
 };
 
 #endif // POLAR_PLOT_H

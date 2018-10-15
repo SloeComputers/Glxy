@@ -23,12 +23,14 @@
 #ifndef EARTH_H
 #define EARTH_H
 
+#include <cassert>
+
 #include "Time.h"
 
 class Earth : public Time
 {
 public:
-   Earth() = default;
+   Earth() : Time(/* is_utc */ true) {}
 
    //! Get the current position of the earth relative to the sun and the
    //  vernal equinox
@@ -45,9 +47,10 @@ public:
    //! Get the current rotation of the Greenwich Meridian
    Angle getRotationOfPrimeMeridian()
    {
+      assert(isUTC());
       unsigned seconds_since_midnight = getSecond() +
                                         SECONDS_PER_MINUTE * (getMinute()  +
-                                                              MINUTES_PER_HOUR * getUTCHour());
+                                                              MINUTES_PER_HOUR * getHour());
 
       return Angle::turn(double(seconds_since_midnight) / SECONDS_PER_DAY);
    }
