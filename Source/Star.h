@@ -75,6 +75,8 @@ public:
 
    bool isTheSun() const { return is_the_sun; }
 
+   const std::string& getName() const { return name; }
+
    float getMagnitude() const { return mag; }
 
    const Vector& getPosition() const { return pos; }

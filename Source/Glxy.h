@@ -61,28 +61,50 @@ private:
    bool            reticule{true};
    bool            names{true};
 
-   //! 
+   //!
    void drawReticule(unsigned step_ra, Angle outer_decl, Angle inner_decl, unsigned step_decl)
    {
-      // Draw the compass points
-      plot.setFont(GUI::font_teletext18, /* horz_align= */ 0, /* vert_align= */ 0);
-      plot.drawText(STB::RED, Angle::deg(  0), outer_decl - Angle::deg(4), "N");
-      plot.drawText(STB::RED, Angle::deg( 90), outer_decl - Angle::deg(4), "W");
-      plot.drawText(STB::RED, Angle::deg(180), outer_decl - Angle::deg(4), "S");
-      plot.drawText(STB::RED, Angle::deg(270), outer_decl - Angle::deg(4), "E");
+      // Draw heading scale
+      for(unsigned ra = 0; ra < 360; ra += 10)
+      {
+         switch(ra)
+         {
+         case 0:
+            plot.setFont(GUI::font_teletext18, /* horz_align= */ 0, /* vert_align= */ 0);
+            plot.drawText(STB::RED, Angle::deg(ra), outer_decl - Angle::deg(2), "N");
+            break;
 
-      plot.drawCircleOfDeclination(STB::RGB(0xC0, 0x00, 0x00), outer_decl);
+         case 90:
+            plot.setFont(GUI::font_teletext18, /* horz_align= */ 0, /* vert_align= */ 0);
+            plot.drawText(STB::RED, Angle::deg(ra), outer_decl - Angle::deg(2), "W");
+            break;
+
+         case 180:
+            plot.setFont(GUI::font_teletext18, /* horz_align= */ 0, /* vert_align= */ 0);
+            plot.drawText(STB::RED, Angle::deg(ra), outer_decl - Angle::deg(2), "S");
+            break;
+
+         case 270:
+            plot.setFont(GUI::font_teletext18, /* horz_align= */ 0, /* vert_align= */ 0);
+            plot.drawText(STB::RED, Angle::deg(ra), outer_decl - Angle::deg(2), "E");
+            break;
+
+         default:
+            plot.setFont(GUI::font_teletext12, /* horz_align= */ 0, /* vert_align= */ 0);
+            plot.drawText(STB::RED, Angle::deg(ra), outer_decl - Angle::deg(2), std::to_string(ra));
+            break;
+         }
+
+         plot.drawRadial(STB::RED, Angle::deg(ra), outer_decl - Angle::deg(1), outer_decl);
+      }
+
+      plot.drawCircleOfDeclination(STB::RED, outer_decl);
 
       if (!reticule) return;
 
-      plot.drawCircleOfDeclination(STB::RGB(0xA0, 0x00, 0x00), 0.0);
-      plot.drawCircleOfDeclination(STB::RGB(0xC0, 0x00, 0x00), inner_decl);
-
       // Draw right ascension radials
-      plot.setFont(GUI::font_teletext12, /* horz_align= */ 0, /* vert_align= */ 0);
       for(unsigned ra = 0; ra < 360; ra += step_ra)
       {
-         plot.drawText(STB::RED, Angle::deg(ra), outer_decl - Angle::deg(3), std::to_string(ra));
          plot.drawRadial(STB::RGB(0x60, 0x00, 0x00), Angle::deg(ra), outer_decl, inner_decl);
       }
 
@@ -109,6 +131,8 @@ private:
       {
          plot.drawCircleOfDeclination(STB::RGB(0x60, 0x00, 0x00), Angle::deg(decl));
       }
+
+      plot.drawCircleOfDeclination(STB::RGB(0xC0, 0x00, 0x00), inner_decl);
    }
 
    void drawState()
@@ -119,22 +143,21 @@ private:
       char text[128];
 
       sprintf(text, "Date : %u %s %4u",
-              earth.getDayOfMonth(),
-              months[earth.getMonth() - 1],
-              earth.getYear());
+              earth.utc.getDayOfMonth(),
+              months[earth.utc.getMonth() - 1],
+              earth.utc.getYear());
       frame.drawText(STB::RED, STB::BLACK, 8, 4, &GUI::font_teletext18, text);
 
       sprintf(text, "UTC  : %02u:%02u:%02u",
-              earth.getHour(), 
-              earth.getMinute(), 
-              earth.getSecond());
+              earth.utc.getHour(),
+              earth.utc.getMinute(),
+              earth.utc.getSecond());
       frame.drawText(STB::RED, STB::BLACK, 8, 26, &GUI::font_teletext18, text);
 
-      Time local_time{/* utc */ false};
       sprintf(text, "Local: %02u:%02u:%02u",
-              local_time.getHour(), 
-              local_time.getMinute(), 
-              local_time.getSecond());
+              earth.local_time.getHour(),
+              earth.local_time.getMinute(),
+              earth.local_time.getSecond());
       frame.drawText(STB::RED, STB::BLACK, 8, 48, &GUI::font_teletext18, text);
 
       sprintf(text, "Lat :  %c%02d\x7f%02d'%04.1f\"",
@@ -189,6 +212,8 @@ private:
                     longitude;
       trans.rotateZ(rot_z.rad());
 
+      plot.setFont(GUI::font_teletext12, /* horz_align= */ -1, /* vert_align= */ -1);
+
       for(const auto& star : star_db)
       {
          if (!star.isTheSun())
@@ -207,7 +232,10 @@ private:
             Angle  declination     = Angle::rad(atan2(pos.z, proj_radius));
             Angle  right_ascension = Angle::rad(atan2(pos.y, pos.x));
 
-            plot.fillCircle(col, right_ascension, declination, m * 8);
+            if (plot.fillCircle(col, right_ascension, declination, m * 8))
+            {
+               if (names) plot.drawText(STB::WHITE, right_ascension, declination, star.getName());
+            }
 
             if (options.debug)
             {
@@ -285,31 +313,31 @@ public:
 
             case 'y':
                dynamic = false;
-               earth.setDate(earth.getYear() + (shift ? -1 : +1), earth.getDayOfYear());
+               earth.adjustDate(shift ? -1 : +1, 0);
                doPlot();
                break;
 
             case 'd':
                dynamic = false;
-               earth.setDate(earth.getYear(), earth.getDayOfYear() + (shift ? -1 : +1));
+               earth.adjustDate(0, shift ? -1 : +1);
                doPlot();
                break;
 
             case 'h':
                dynamic = false;
-               earth.setTime(earth.getHour() + (shift ? -1 : +1), earth.getMinute());
+               earth.adjustTime(shift ? -1 : +1, 0);
                doPlot();
                break;
 
             case 'q':
                dynamic = false;
-               earth.setTime(earth.getHour(), earth.getMinute() + (shift ? -15 : +15));
+               earth.adjustTime(0, shift ? -15 : +15);
                doPlot();
                break;
 
             case 'm':
                dynamic = false;
-               earth.setTime(earth.getHour(), earth.getMinute() + (shift ? -1 : +1));
+               earth.adjustTime(0, shift ? -1 : +1);
                doPlot();
                break;
 

@@ -84,14 +84,14 @@ public:
       frame.drawLine(rgb, outer.x, outer.y, inner.x, inner.y);
    }
 
-   void fillCircle(STB::Colour rgb, Angle right_ascension, Angle declination, unsigned radius)
+   bool fillCircle(STB::Colour rgb, Angle right_ascension, Angle declination, unsigned radius)
    {
       Pixel pixel;
+      if (!polarToXY(right_ascension, declination, pixel)) return false;
 
-      if (polarToXY(right_ascension, declination, pixel))
-      {
-         frame.fillCircle(rgb, pixel.x, pixel.y, radius);
-      }
+      frame.fillCircle(rgb, pixel.x, pixel.y, radius);
+
+      return true;
    }
 
    void setFont(const GUI::Font& font_, signed horz_align_ = -1, signed vert_align_ = -1)
