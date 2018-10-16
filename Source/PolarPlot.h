@@ -52,26 +52,9 @@ public:
       min_decl = min_decl_;
    }
 
-   void setRotation(Angle rotation_)
-   {
-      rotation = rotation_;
-   }
-
-   void setZenith(Angle zenith_)
-   {
-      zenith = zenith_;
-   }
-
-   Angle getRotation() const
-   {
-      return rotation;
-   }
-
    //! Convert polar co-ordinates in radians to screen pixels
    bool polarToXY(Angle right_ascension, Angle declination, Pixel& pixel) const
    {
-      right_ascension -= rotation;
-
       double r = radius * ((max_decl - declination) / (max_decl - min_decl));
       pixel.x  = centre.x + sin(right_ascension.rad()) * r;
       pixel.y  = centre.y - cos(right_ascension.rad()) * r;
@@ -155,9 +138,6 @@ private:
 
    //!< Maximum declination to plot
    Angle        max_decl{90.0, Angle::Unit::DEG};
-
-   Angle        rotation;
-   Angle        zenith;
 };
 
 #endif // POLAR_PLOT_H

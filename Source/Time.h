@@ -32,7 +32,6 @@ public:
    static const unsigned SECONDS_PER_MINUTE = 60;
    static const unsigned MINUTES_PER_HOUR   = 60;
    static const unsigned HOURS_PER_DAY      = 24;
-
    static const unsigned SECONDS_PER_DAY    = HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
 
    Time(bool utc_)

@@ -30,6 +30,7 @@
 
 #include "STB/ConsoleApp.h"
 #include "STB/Vector2.h"
+#include "STB/Matrix_4x4.h"
 #include "GUI/Frame.h"
 #include "GUI/Font/Teletext.h"
 #include "PLT/Event.h"
@@ -46,7 +47,7 @@ class Glxy
 private:
    using Pixel = PolarPlot::Pixel;
 
-   const Angle MIN_DECL{-0.0, Angle::Unit::DEG};
+   const Angle     MIN_DECL{-0.0, Angle::Unit::DEG};
 
    const Options&  options;
    GUI::Frame      frame;
@@ -54,21 +55,28 @@ private:
    Angle           latitude;
    Angle           longitude;
    Earth           earth;
-   bool            dynamic{true};
    PolarPlot       plot{frame};
+
+   bool            dynamic{true};
+   bool            reticule{true};
+   bool            names{true};
 
    //! 
    void drawReticule(unsigned step_ra, Angle outer_decl, Angle inner_decl, unsigned step_decl)
    {
       // Draw the compass points
-      Angle save_rotation = plot.getRotation();
-      plot.setRotation(0.0);
       plot.setFont(GUI::font_teletext18, /* horz_align= */ 0, /* vert_align= */ 0);
       plot.drawText(STB::RED, Angle::deg(  0), outer_decl - Angle::deg(4), "N");
       plot.drawText(STB::RED, Angle::deg( 90), outer_decl - Angle::deg(4), "W");
       plot.drawText(STB::RED, Angle::deg(180), outer_decl - Angle::deg(4), "S");
       plot.drawText(STB::RED, Angle::deg(270), outer_decl - Angle::deg(4), "E");
-      plot.setRotation(save_rotation);
+
+      plot.drawCircleOfDeclination(STB::RGB(0xC0, 0x00, 0x00), outer_decl);
+
+      if (!reticule) return;
+
+      plot.drawCircleOfDeclination(STB::RGB(0xA0, 0x00, 0x00), 0.0);
+      plot.drawCircleOfDeclination(STB::RGB(0xC0, 0x00, 0x00), inner_decl);
 
       // Draw right ascension radials
       plot.setFont(GUI::font_teletext12, /* horz_align= */ 0, /* vert_align= */ 0);
@@ -101,10 +109,6 @@ private:
       {
          plot.drawCircleOfDeclination(STB::RGB(0x60, 0x00, 0x00), Angle::deg(decl));
       }
-
-      plot.drawCircleOfDeclination(STB::RGB(0xA0, 0x00, 0x00), 0.0);
-      plot.drawCircleOfDeclination(STB::RGB(0xC0, 0x00, 0x00), inner_decl);
-      plot.drawCircleOfDeclination(STB::RGB(0xC0, 0x00, 0x00), outer_decl);
    }
 
    void drawState()
@@ -156,12 +160,6 @@ private:
 
       plot.setView(options.width / 2, options.height / 2, (options.height / 2) - 40);
 
-      plot.setRotation(earth.getEclipticLongitude() +
-                       earth.getRotationOfPrimeMeridian() -
-                       longitude);
-
-      plot.setZenith(latitude);
-
       plot.setMinDeclination(MIN_DECL);
 
       float min_mag = +99.0;
@@ -181,6 +179,16 @@ private:
 
       // printf("min = %g max = %g\n", min_mag, max_mag);
 
+      STB::Matrix_4x4<double> trans;
+
+      Angle rot_y = Angle::deg(90.0) - latitude;
+      trans.rotateY(rot_y.rad());
+
+      Angle rot_z = earth.getEclipticLongitude() +
+                    earth.getRotationOfPrimeMeridian() -
+                    longitude;
+      trans.rotateZ(rot_z.rad());
+
       for(const auto& star : star_db)
       {
          if (!star.isTheSun())
@@ -192,10 +200,12 @@ private:
 
             STB::Colour col = STB::GREY(m*255);
 
-            const Star::Vector& pos = star.getPosition();
-            double proj_radius      = sqrt(pos.x * pos.x + pos.y * pos.y);
-            Angle  declination      = Angle::rad(atan2(pos.z, proj_radius));
-            Angle  right_ascension  = Angle::rad(atan2(pos.y, pos.x));
+            const Star::Vector& abs_pos = star.getPosition();
+            Star::Vector pos = trans.transformPos(abs_pos);
+
+            double proj_radius     = sqrt(pos.x * pos.x + pos.y * pos.y);
+            Angle  declination     = Angle::rad(atan2(pos.z, proj_radius));
+            Angle  right_ascension = Angle::rad(atan2(pos.y, pos.x));
 
             plot.fillCircle(col, right_ascension, declination, m * 8);
 
@@ -207,8 +217,6 @@ private:
             }
          }
       }
-
-      plot.setZenith(0.0);
 
       drawReticule(30, MIN_DECL, Angle::deg(85.0), 30);
 
@@ -258,6 +266,16 @@ public:
             case 'x':
             case PLT::ESCAPE:
                return 0;
+
+            case 'r':
+               reticule = !reticule;
+               doPlot();
+               break;
+
+            case 't':
+               names = !names;
+               doPlot();
+               break;
 
             case 'n':
                dynamic = true;
