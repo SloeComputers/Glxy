@@ -65,37 +65,46 @@ private:
    void drawReticule(unsigned step_ra, Angle outer_decl, Angle inner_decl, unsigned step_decl)
    {
       // Draw heading scale
-      for(unsigned ra = 0; ra < 360; ra += 10)
+      for(signed i = 0; i < 360; i += 5)
       {
-         switch(ra)
+         Angle ra = Angle::deg(i);
+
+         if ((i % 10) == 0)
          {
-         case 0:
-            plot.setFont(GUI::font_teletext18, /* horz_align= */ 0, /* vert_align= */ 0);
-            plot.drawText(STB::RED, Angle::deg(ra), outer_decl - Angle::deg(2), "N");
-            break;
+            switch(i)
+            {
+            case 0:
+               plot.setFont(GUI::font_teletext18, /* horz_align= */ 0, /* vert_align= */ 0);
+               plot.drawText(STB::RED, ra, outer_decl - Angle::deg(2), "N");
+               break;
 
-         case 90:
-            plot.setFont(GUI::font_teletext18, /* horz_align= */ 0, /* vert_align= */ 0);
-            plot.drawText(STB::RED, Angle::deg(ra), outer_decl - Angle::deg(2), "W");
-            break;
+            case 90:
+               plot.setFont(GUI::font_teletext18, /* horz_align= */ 0, /* vert_align= */ 0);
+               plot.drawText(STB::RED, ra, outer_decl - Angle::deg(2), "E");
+               break;
 
-         case 180:
-            plot.setFont(GUI::font_teletext18, /* horz_align= */ 0, /* vert_align= */ 0);
-            plot.drawText(STB::RED, Angle::deg(ra), outer_decl - Angle::deg(2), "S");
-            break;
+            case 180:
+               plot.setFont(GUI::font_teletext18, /* horz_align= */ 0, /* vert_align= */ 0);
+               plot.drawText(STB::RED, ra, outer_decl - Angle::deg(2), "S");
+               break;
 
-         case 270:
-            plot.setFont(GUI::font_teletext18, /* horz_align= */ 0, /* vert_align= */ 0);
-            plot.drawText(STB::RED, Angle::deg(ra), outer_decl - Angle::deg(2), "E");
-            break;
+            case 270:
+               plot.setFont(GUI::font_teletext18, /* horz_align= */ 0, /* vert_align= */ 0);
+               plot.drawText(STB::RED, ra, outer_decl - Angle::deg(2), "W");
+               break;
 
-         default:
-            plot.setFont(GUI::font_teletext12, /* horz_align= */ 0, /* vert_align= */ 0);
-            plot.drawText(STB::RED, Angle::deg(ra), outer_decl - Angle::deg(2), std::to_string(ra));
-            break;
+            default:
+               plot.setFont(GUI::font_teletext12, /* horz_align= */ 0, /* vert_align= */ 0);
+               plot.drawText(STB::RED, ra, outer_decl - Angle::deg(2), std::to_string(i));
+               break;
+            }
+
+            plot.drawRadial(STB::RED, ra, outer_decl - Angle::deg(1), outer_decl);
          }
-
-         plot.drawRadial(STB::RED, Angle::deg(ra), outer_decl - Angle::deg(1), outer_decl);
+         else
+         {
+            plot.drawRadial(STB::RED, ra, outer_decl - Angle::deg(0.5), outer_decl);
+         }
       }
 
       plot.drawCircleOfDeclination(STB::RED, outer_decl);
@@ -113,16 +122,17 @@ private:
       {
          Angle ra = Angle::deg(i);
 
-         plot.drawRadial(STB::RGB(0xC0, 0x00, 0x00), ra,  outer_decl, inner_decl);
+         plot.drawRadial(STB::RGB(0x40, 0x00, 0x00), ra,  outer_decl, inner_decl);
 
          for(signed decl = 90-10; decl > outer_decl.deg(); decl -= 10)
          {
-            plot.drawText(STB::RED, ra, Angle::deg(decl) - Angle::deg(1), std::to_string(decl));
+            plot.drawText(STB::RGB(0xC0, 0x00, 0x00),
+                          ra, Angle::deg(decl) - Angle::deg(1), std::to_string(decl));
 
             Pixel a, b;
             plot.polarToXY(ra - Angle::deg(1), Angle::deg(decl), a);
             plot.polarToXY(ra + Angle::deg(1), Angle::deg(decl), b);
-            frame.drawLine(STB::RED, a.x, a.y, b.x, b.y);
+            frame.drawLine(STB::RGB(0x40, 0x00, 0x00), a.x, a.y, b.x, b.y);
          }
       }
 
@@ -132,7 +142,7 @@ private:
          plot.drawCircleOfDeclination(STB::RGB(0x60, 0x00, 0x00), Angle::deg(decl));
       }
 
-      plot.drawCircleOfDeclination(STB::RGB(0xC0, 0x00, 0x00), inner_decl);
+      plot.drawCircleOfDeclination(STB::RGB(0x60, 0x00, 0x00), inner_decl);
    }
 
    void drawState()
@@ -230,11 +240,11 @@ private:
 
             double proj_radius     = sqrt(pos.x * pos.x + pos.y * pos.y);
             Angle  declination     = Angle::rad(atan2(pos.z, proj_radius));
-            Angle  right_ascension = Angle::rad(atan2(pos.y, pos.x));
+            Angle  right_ascension = Angle::rad(-atan2(pos.y, pos.x));
 
             if (plot.fillCircle(col, right_ascension, declination, m * 8))
             {
-               if (names) plot.drawText(STB::WHITE, right_ascension, declination, star.getName());
+               if (names) plot.drawText(STB::RED, right_ascension, declination, star.getName());
             }
 
             if (options.debug)

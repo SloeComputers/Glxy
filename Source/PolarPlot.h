@@ -56,7 +56,7 @@ public:
    bool polarToXY(Angle right_ascension, Angle declination, Pixel& pixel) const
    {
       double r = radius * ((max_decl - declination) / (max_decl - min_decl));
-      pixel.x  = centre.x + sin(right_ascension.rad()) * r;
+      pixel.x  = centre.x - sin(right_ascension.rad()) * r;
       pixel.y  = centre.y - cos(right_ascension.rad()) * r;
 
       return declination > min_decl;
@@ -84,13 +84,19 @@ public:
       frame.drawLine(rgb, outer.x, outer.y, inner.x, inner.y);
    }
 
+   bool drawCircle(STB::Colour rgb, Angle right_ascension, Angle declination, unsigned radius)
+   {
+      Pixel pixel;
+      if (!polarToXY(right_ascension, declination, pixel)) return false;
+      frame.drawCircle(rgb, pixel.x, pixel.y, radius);
+      return true;
+   }
+
    bool fillCircle(STB::Colour rgb, Angle right_ascension, Angle declination, unsigned radius)
    {
       Pixel pixel;
       if (!polarToXY(right_ascension, declination, pixel)) return false;
-
       frame.fillCircle(rgb, pixel.x, pixel.y, radius);
-
       return true;
    }
 
