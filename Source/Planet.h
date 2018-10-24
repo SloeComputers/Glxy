@@ -20,57 +20,43 @@
 // SOFTWARE.
 //------------------------------------------------------------------------------
 
-#ifndef STAR_DB_H
-#define STAR_DB_H
+#ifndef PLANET_H
+#define PLANET_H
 
-#include "STB/CSV.h"
+#include <cassert>
 
-#include "Star.h"
+#include "KeplerianElements.h"
 
-class StarDB : public std::vector<Star>
+class Planet
 {
 public:
-   StarDB() = default;
-
-   void load(const std::string& filename)
+   Planet(const char* name_)
+      : name(name_)
+      , ke_init(name_)
+      , ke_rate(name_)
    {
-      printf("Loading \"%s\"\n", filename.c_str());
-
-      STB::CSV::Document<Attr> document(filename);;
-
-      if (!document.isOpen())
-      {
-         fprintf(stderr, "ERR: Failed to open \"%s\"\n", filename.c_str());
-         return;
-      }
-
-      document.readHeader();
-
-      document.requireField("proper", Attr::NAME);
-      document.requireField("mag", Attr::MAG);
-
-      document.requireField("x", Attr::X);
-      document.requireField("y", Attr::Y);
-      document.requireField("z", Attr::Z);
-
-      document.requireField("vx", Attr::VX);
-      document.requireField("vy", Attr::VY);
-      document.requireField("vz", Attr::VZ);
-
-      document.requireField("decrad", Attr::DECL);
-      document.requireField("rarad",  Attr::RA);
-
-      while(true)
-      {
-          emplace_back();
-
-          if (!document.readRecord(back()))
-          {
-             pop_back();
-             break;
-          }
-      }
+      assert(ke_init.isValid());
+      assert(ke_rate.isValid());
    }
+
+   void compute(const Time& time)
+   {
+      // Calculate the number of centries since the data set epoch
+      double t_cy = time.getYearsSinceEpoch(KeplerianElements::getEpoch()) / 100.0;
+
+      // Compute Keplerian elements for the given time
+      KeplerianElements elem = ke_rate;
+      elem *= t_cy;
+      elem += ke_init;
+
+      //argument_of_perihelion = elem.w - elem.W;
+      //mean_anomaly           = elem.L - elem.w + 
+   }
+
+private:
+   const std::string     name;
+   KeplerianElementsInit ke_init;
+   KeplerianElementsRate ke_rate;
 };
 
-#endif // STAR_DB_H
+#endif // PLANET_H

@@ -24,7 +24,10 @@
 #define TIME_H
 
 #include <ctime>
+#include <cstdio>
 #include <cassert>
+
+#include <string>
 
 class Time
 {
@@ -63,6 +66,40 @@ public:
 
    //! Returns seconds (0-60)
    signed getSecond() const { return second; }
+
+   //!
+   double getYearsSinceEpoch(unsigned epoch) const
+   {
+      double days_since_j2000 = ((getYear() - epoch) * 365.25 + getDayOfYear()) * 24 + getHour();
+      return days_since_j2000 / 365.25;
+   }
+
+   std::string getDate() const
+   {
+      static const char* months[] = {"Jan", "Feb", "Mar", "Apr",
+                                     "May", "Jun", "Jul", "Aug",
+                                     "Sep", "Oct", "Nov", "Dec"};
+
+      std::string text = std::to_string(getDayOfMonth());
+
+      text += ' ';
+      text += months[getMonth() - 1];
+      text += ' ';
+      text += std::to_string(getYear());
+
+      return text;
+   }
+
+   std::string getTime() const
+   {
+      // TODO don't do it like this it will scare people
+
+      char text[32];
+
+      sprintf(text, "%02u:%02u:%02u", getHour(), getMinute(), getSecond());
+
+      return text;
+   }
 
    bool isLeapYear() const
    {

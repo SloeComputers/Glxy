@@ -28,6 +28,8 @@
 #include <cstdlib>
 #include <ctime>
 
+#include <array>
+
 #include "STB/ConsoleApp.h"
 #include "STB/Vector2.h"
 #include "STB/Matrix_4x4.h"
@@ -36,11 +38,9 @@
 #include "PLT/Event.h"
 
 #include "Angle.h"
-#include "Earth.h"
 #include "Options.h"
 #include "PolarPlot.h"
-#include "Star.h"
-#include "StarDB.h"
+#include "SolarSystem.h"
 
 class Glxy
 {
@@ -51,10 +51,9 @@ private:
 
    const Options&  options;
    GUI::Frame      frame;
-   StarDB          star_db;
+   SolarSystem     system;
    Angle           latitude;
    Angle           longitude;
-   Earth           earth;
    PolarPlot       plot{frame};
 
    bool            dynamic{true};
@@ -147,42 +146,35 @@ private:
 
    void drawState()
    {
-      static const char* months[] = {"Jan", "Feb", "Mar", "Apr",
-                                     "May", "Jun", "Jul", "Aug",
-                                     "Sep", "Oct", "Nov", "Dec"};
-      char text[128];
+      std::string text;
 
-      sprintf(text, "Date : %u %s %4u",
-              earth.utc.getDayOfMonth(),
-              months[earth.utc.getMonth() - 1],
-              earth.utc.getYear());
-      frame.drawText(STB::RED, STB::BLACK, 8, 4, &GUI::font_teletext18, text);
+      text = "Date : ";
+      text += system.getDate(/* is_utc */ true);
+      frame.drawText(STB::RED, STB::BLACK, 8, 4, &GUI::font_teletext18, text.c_str());
 
-      sprintf(text, "UTC  : %02u:%02u:%02u",
-              earth.utc.getHour(),
-              earth.utc.getMinute(),
-              earth.utc.getSecond());
-      frame.drawText(STB::RED, STB::BLACK, 8, 26, &GUI::font_teletext18, text);
+      text = "UTC  : ";
+      text += system.getTime(/* is_utc */ true);
+      frame.drawText(STB::RED, STB::BLACK, 8, 26, &GUI::font_teletext18, text.c_str());
 
-      sprintf(text, "Local: %02u:%02u:%02u",
-              earth.local_time.getHour(),
-              earth.local_time.getMinute(),
-              earth.local_time.getSecond());
-      frame.drawText(STB::RED, STB::BLACK, 8, 48, &GUI::font_teletext18, text);
+      text = "Local: ";
+      text += system.getTime(/* is_utc */ false);
+      frame.drawText(STB::RED, STB::BLACK, 8, 48, &GUI::font_teletext18, text.c_str());
 
-      sprintf(text, "Lat :  %c%02d\x7f%02d'%04.1f\"",
-              latitude.degrees() >= 0 ? 'N' : 'S',
+      char txt[128];
+
+      sprintf(txt, "Lat :  %c%02d\x7f%02d'%04.1f\"",
+              latitude.deg() >= 0 ? 'N' : 'S',
               ::abs((int)latitude.degrees()),
               latitude.minutes(),
               latitude.seconds());
-      frame.drawText(STB::RED, STB::BLACK, options.width - 250, 4, &GUI::font_teletext18, text);
+      frame.drawText(STB::RED, STB::BLACK, options.width - 250, 4, &GUI::font_teletext18, txt);
 
-      sprintf(text, "Lon : %c%03d\x7f%02d'%04.1f\"",
-              longitude.degrees() >= 0 ? 'W' : 'E',
+      sprintf(txt, "Lon : %c%03d\x7f%02d'%04.1f\"",
+              longitude.deg() >= 0 ? 'W' : 'E',
               ::abs((int)longitude.degrees()),
               longitude.minutes(),
               longitude.seconds());
-      frame.drawText(STB::RED, STB::BLACK, options.width - 250, 26, &GUI::font_teletext18, text);
+      frame.drawText(STB::RED, STB::BLACK, options.width - 250, 26, &GUI::font_teletext18, txt);
    }
 
    void doPlot()
@@ -198,7 +190,7 @@ private:
       float min_mag = +99.0;
       float max_mag = -99.0;
 
-      for(const auto& star : star_db)
+      for(const auto& star : system.star_db)
       {
          if (!star.isTheSun())
          {
@@ -217,14 +209,14 @@ private:
       Angle rot_y = Angle::deg(90.0) - latitude;
       trans.rotateY(rot_y.rad());
 
-      Angle rot_z = earth.getEclipticLongitude() +
-                    earth.getRotationOfPrimeMeridian() -
+      Angle rot_z = system.earth.getEclipticLongitude() +
+                    system.earth.getRotationOfPrimeMeridian() -
                     longitude;
       trans.rotateZ(rot_z.rad());
 
       plot.setFont(GUI::font_teletext12, /* horz_align= */ -1, /* vert_align= */ -1);
 
-      for(const auto& star : star_db)
+      for(const auto& star : system.star_db)
       {
          if (!star.isTheSun())
          {
@@ -267,13 +259,12 @@ public:
       , frame{title_.c_str(),
               options.width, options.height,
               options.full_screen ? PLT::Frame::FULL_SCREEN : 0}
+      , system((const char*)options.filename)
    {
       latitude  = Angle::deg(options.latitude_degs);
       longitude = Angle::deg(options.longitude_degs);
 
-      star_db.load((const char*)options.filename);
-
-      if (options.debug) printf("Number of stars = %lu\n", star_db.size());
+      if (options.debug) system.debug();
    }
 
   int eventLoop()
@@ -293,7 +284,7 @@ public:
          case PLT::Event::TIMER:
             if (dynamic)
             {
-               earth.setNow();
+               system.setNow();
                doPlot();
             }
             break;
@@ -317,37 +308,37 @@ public:
 
             case 'n':
                dynamic = true;
-               earth.setNow();
+               system.setNow();
                doPlot();
                break;
 
             case 'y':
                dynamic = false;
-               earth.adjustDate(shift ? -1 : +1, 0);
+               system.adjustDate(shift ? -1 : +1, 0);
                doPlot();
                break;
 
             case 'd':
                dynamic = false;
-               earth.adjustDate(0, shift ? -1 : +1);
+               system.adjustDate(0, shift ? -1 : +1);
                doPlot();
                break;
 
             case 'h':
                dynamic = false;
-               earth.adjustTime(shift ? -1 : +1, 0);
+               system.adjustTime(shift ? -1 : +1, 0);
                doPlot();
                break;
 
             case 'q':
                dynamic = false;
-               earth.adjustTime(0, shift ? -15 : +15);
+               system.adjustTime(0, shift ? -15 : +15);
                doPlot();
                break;
 
             case 'm':
                dynamic = false;
-               earth.adjustTime(0, shift ? -1 : +1);
+               system.adjustTime(0, shift ? -1 : +1);
                doPlot();
                break;
 

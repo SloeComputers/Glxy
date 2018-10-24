@@ -26,11 +26,14 @@
 #include <cassert>
 
 #include "Time.h"
+#include "Planet.h"
 
-class Earth
+class Earth : public Planet
 {
 public:
-   Earth() = default;
+   Earth()
+      : Planet{"Earth"}
+   {}
 
    Time utc{/* is_utc */ true};
    Time local_time{/* is_utc */ false};
@@ -97,4 +100,4 @@ private:
    }
 };
 
-#endif // TIME_H
+#endif // EARTH_H
