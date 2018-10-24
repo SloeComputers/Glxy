@@ -1,5 +1,5 @@
 
-source  = ['Source/glxy.cpp']
+source  = ['Source/glxy.cpp', 'Source/KeplerianElements.cpp']
 binary  = 'glxy'
 app     = 'Glxy'
 version = '0.0.0'

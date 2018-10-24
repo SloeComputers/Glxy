@@ -27,7 +27,7 @@
 
 #include "Angle.h"
 #include "STB/CSV.h"
-#include "STB/Vector3.h"
+#include "Object.h"
 
 
 enum class Attr
@@ -46,11 +46,10 @@ enum class Attr
 
 
 class Star : public STB::CSV::Document<Attr>::AttrCallBack
+           , public Object
 {
 public:
    Star() = default;
-
-   using Vector = STB::Vector3<double>;
 
    void setAttr(Attr attr, const char* value) override
    {
@@ -61,41 +60,32 @@ public:
          is_the_sun = name == "Sol";
          break;
 
-      case Attr::MAG:  mag   = strtod(value, nullptr); break;
-      case Attr::X:    pos.x = strtod(value, nullptr); break;
-      case Attr::Y:    pos.y = strtod(value, nullptr); break;
-      case Attr::Z:    pos.z = strtod(value, nullptr); break;
-      case Attr::VX:   vel.x = strtod(value, nullptr); break;
-      case Attr::VY:   vel.y = strtod(value, nullptr); break;
-      case Attr::VZ:   vel.z = strtod(value, nullptr); break;
-      case Attr::DECL: decl  = Angle::rad(strtod(value, nullptr)); break;
-      case Attr::RA:   ra    = Angle::rad(strtod(value, nullptr)); break;
+      case Attr::MAG:  ap_mag = strtod(value, nullptr); break;
+      case Attr::X:    pos.x  = strtod(value, nullptr); break;
+      case Attr::Y:    pos.y  = strtod(value, nullptr); break;
+      case Attr::Z:    pos.z  = strtod(value, nullptr); break;
+      case Attr::VX:   vel.x  = strtod(value, nullptr); break;
+      case Attr::VY:   vel.y  = strtod(value, nullptr); break;
+      case Attr::VZ:   vel.z  = strtod(value, nullptr); break;
+      case Attr::DECL: decl   = Angle::rad(strtod(value, nullptr)); break;
+      case Attr::RA:   ra     = Angle::rad(strtod(value, nullptr)); break;
       }
    }
 
    bool isTheSun() const { return is_the_sun; }
 
-   const std::string& getName() const { return name; }
-
-   float getMagnitude() const { return mag; }
-
-   const Vector& getPosition() const { return pos; }
-
    const Vector& getVelocity() const { return vel; }
 
    void debug(FILE* fp = stdout) const
    {
-      printf("%s: pos = {%g, %g, %g} vel = {%g, %g, %g} ra=%.15f decl=%.15f mag=%f\n",
+      printf("%s: pos = {%g, %g, %g} vel = {%g, %g, %g} ra=%.15f decl=%.15f ap_mag=%f\n",
              name.c_str(),
              pos.x, pos.y, pos.z,
              vel.x, vel.y, vel.z,
-             double(ra.deg()), double(decl.deg()), mag);
+             double(ra.deg()), double(decl.deg()), ap_mag);
    }
 
 private:
-   std::string name;
-   float       mag{0.0};
-   Vector      pos{0.0, 0.0, 0.0};
    Vector      vel{0.0, 0.0, 0.0};
    Angle       decl;
    Angle       ra;

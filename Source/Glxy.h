@@ -194,7 +194,7 @@ private:
       {
          if (!star.isTheSun())
          {
-            float mag = star.getMagnitude();
+            float mag = star.getAparentMagnitude();
             if (mag > 7)     mag = 7;
             mag = pow(1.112, -mag);
             if (mag > max_mag) max_mag = mag;
@@ -220,15 +220,15 @@ private:
       {
          if (!star.isTheSun())
          {
-            float mag = star.getMagnitude();
+            float mag = star.getAparentMagnitude();
             if (mag > 7)     mag = 7;
             mag = pow(1.112, -mag);
             float m = (mag - min_mag) / (max_mag - min_mag);
 
             STB::Colour col = STB::GREY(m*255);
 
-            const Star::Vector& abs_pos = star.getPosition();
-            Star::Vector pos = trans.transformPos(abs_pos);
+            const Vector& abs_pos = star.getPosition();
+            Vector pos = trans.transformPos(abs_pos);
 
             double proj_radius     = sqrt(pos.x * pos.x + pos.y * pos.y);
             Angle  declination     = Angle::rad(atan2(pos.z, proj_radius));
@@ -245,6 +245,21 @@ private:
                       double(right_ascension.deg()), double(declination.deg()), m);
                star.debug();
             }
+         }
+      }
+
+      for(const auto& planet : system.planet_list)
+      {
+         const Vector& abs_pos = planet.getPosition();
+         Vector pos = trans.transformPos(abs_pos);
+
+         double proj_radius     = sqrt(pos.x * pos.x + pos.y * pos.y);
+         Angle  declination     = Angle::rad(atan2(pos.z, proj_radius));
+         Angle  right_ascension = Angle::rad(-atan2(pos.y, pos.x));
+
+         if (plot.fillCircle(STB::YELLOW, right_ascension, declination, 10))
+         {
+            if (names) plot.drawText(STB::YELLOW, right_ascension, declination, planet.getName());
          }
       }
 

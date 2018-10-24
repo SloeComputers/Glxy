@@ -35,20 +35,20 @@ public:
    StarDB star_db;
    Earth  earth;
 
-private:
    std::array<Planet,7> planet_list =
    {
       "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Neptune", "Uranus"
    };
 
+private:
    void update()
    {
       for(auto& planet : planet_list)
       {
-         planet.compute(earth.utc);
+         planet.computePosition(earth.utc);
       }
 
-      earth.compute(earth.utc);
+      earth.computePosition(earth.utc);
    }
 
 public:
@@ -76,6 +76,7 @@ public:
       return time.getTime();
    }
 
+   //! Set the date and time to now
    void setNow()
    {
       earth.setNow();

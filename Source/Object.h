@@ -20,52 +20,32 @@
 // SOFTWARE.
 //------------------------------------------------------------------------------
 
-#ifndef PLANET_H
-#define PLANET_H
+#ifndef OBJECT_H
+#define OBJECT_H
 
-#include <cassert>
+#include "Vector.h"
 
-#include "KeplerianElements.h"
-
-#include "Object.h"
-
-class Planet : public Object
+class Object
 {
 public:
-   Planet(const char* name_)
-      : Object(name_)
-      , ke_init(name_)
-      , ke_rate(name_)
-   {
-      assert(ke_init.isValid());
-      assert(ke_rate.isValid());
+   using Vector = STB::Vector3<double>;
 
-           if (name == "Mercury") { ap_mag = -2.48; }
-      else if (name == "Venus")   { ap_mag = -2.98; }
-      else if (name == "Mars")    { ap_mag = -2.94; }
-      else if (name == "Jupiter") { ap_mag = -2.94; }
-      else if (name == "Saturn")  { ap_mag = -0.55; }
-      else if (name == "Uranus")  { ap_mag = +5.38; }
-      else if (name == "Neptune") { ap_mag = +7.67; }
-   }
+   Object() = default;
 
-   void computePosition(const Time& time)
-   {
-      // Calculate the number of centries since the data set epoch
-      double t_cy = time.getYearsSinceEpoch(KeplerianElements::getEpoch()) / 100.0;
+   Object(const char* name_)
+      : name(name_)
+   {}
 
-      // Compute Keplerian elements for the given time
-      KeplerianElements elem = ke_rate;
-      elem *= t_cy;
-      elem += ke_init;
+   const std::string& getName() const { return name; }
 
-      // Calculate a position from the Keplerian element
-      elem.computePosition(pos);
-   }
+   float getAparentMagnitude() const { return ap_mag; }
 
-private:
-   KeplerianElementsInit ke_init;
-   KeplerianElementsRate ke_rate;
+   const Vector& getPosition() const { return pos; }
+
+protected:
+   std::string name{};
+   float       ap_mag{0.0};
+   Vector      pos{0.0, 0.0, 0.0};
 };
 
-#endif // PLANET_H
+#endif // OBJECT_H
