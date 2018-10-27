@@ -61,7 +61,7 @@ public:
 
    //! Get the current position of the earth relative to the sun and the
    //  vernal equinox
-   Angle getEclipticLongitude()
+   Angle getEclipticLongitude() const
    {
       // XXX  this will drift as we move further from 2018
       // TODO should calculate days since the reference date
@@ -72,7 +72,7 @@ public:
    }
 
    //! Get the current rotation of the Greenwich Meridian
-   Angle getRotationOfPrimeMeridian()
+   Angle getRotationOfPrimeMeridian() const
    {
       unsigned seconds_since_midnight = utc.getSecond() +
                                         Time::SECONDS_PER_MINUTE * (utc.getMinute()  +

@@ -35,9 +35,7 @@ class PolarPlot
 public:
    using Pixel = STB::Vector2<unsigned>;
 
-   PolarPlot(GUI::Frame& frame_)
-      : frame(frame_)
-   {}
+   PolarPlot() = default;
 
    //! Configure the position and size of the plot in pixels
    void setView(unsigned org_x, unsigned org_y, unsigned radius_)
@@ -63,7 +61,7 @@ public:
    }
 
    //! Draw a circle of declination
-   void drawCircleOfDeclination(STB::Colour rgb, Angle decl)
+   void drawCircleOfDeclination(GUI::Frame& frame, STB::Colour rgb, Angle decl)
    {
       Pixel origin;
       polarToXY(0.0, Angle::deg(90.0), origin);
@@ -75,7 +73,7 @@ public:
       frame.drawCircle(rgb, origin.x, origin.y, radius);
    }
 
-   void drawRadial(STB::Colour rgb, Angle right_ascension, Angle from_decl, Angle to_decl)
+   void drawRadial(GUI::Frame& frame, STB::Colour rgb, Angle right_ascension, Angle from_decl, Angle to_decl)
    {
       Pixel outer, inner;
       polarToXY(right_ascension, from_decl, outer); 
@@ -84,7 +82,7 @@ public:
       frame.drawLine(rgb, outer.x, outer.y, inner.x, inner.y);
    }
 
-   bool drawCircle(STB::Colour rgb, Angle right_ascension, Angle declination, unsigned radius)
+   bool drawCircle(GUI::Frame& frame, STB::Colour rgb, Angle right_ascension, Angle declination, unsigned radius)
    {
       Pixel pixel;
       if (!polarToXY(right_ascension, declination, pixel)) return false;
@@ -92,7 +90,7 @@ public:
       return true;
    }
 
-   bool fillCircle(STB::Colour rgb, Angle right_ascension, Angle declination, unsigned radius)
+   bool fillCircle(GUI::Frame& frame, STB::Colour rgb, Angle right_ascension, Angle declination, unsigned radius)
    {
       Pixel pixel;
       if (!polarToXY(right_ascension, declination, pixel)) return false;
@@ -107,7 +105,7 @@ public:
       vert_align = vert_align_;
    }
 
-   void drawText(STB::Colour rgb, Angle right_ascension, Angle declination, const std::string& text)
+   void drawText(GUI::Frame& frame, STB::Colour rgb, Angle right_ascension, Angle declination, const std::string& text)
    {
       Pixel pos;
       polarToXY(right_ascension, declination, pos);
@@ -128,7 +126,6 @@ public:
    }
 
 private:
-   GUI::Frame&      frame;
    const GUI::Font* font{nullptr};
    signed           horz_align{-1};
    signed           vert_align{-1};

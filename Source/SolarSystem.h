@@ -59,6 +59,11 @@ public:
 
    void debug() const
    {
+      for(const auto& star : star_db)
+      {
+         star.debug();
+      }
+
       printf("Number of stars = %lu\n", star_db.size());
    }
 
