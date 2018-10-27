@@ -70,7 +70,7 @@ public:
    //!
    double getYearsSinceEpoch(unsigned epoch) const
    {
-      double days_since_j2000 = (getYear() - epoch) * 365.25 + getDayOfYear() + (getHour()/24);
+      double days_since_j2000 = (getYear() - epoch) * 365.25 + getDayOfYear() + (getHour()/24.0);
       return days_since_j2000 / 365.25;
    }
 

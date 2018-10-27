@@ -20,52 +20,51 @@
 // SOFTWARE.
 //------------------------------------------------------------------------------
 
-#ifndef PLANET_H
-#define PLANET_H
+#ifndef VIEW_PLANETS_H
+#define VIEW_PLANETS_H
 
-#include <cassert>
+#include "GUI/Frame.h"
+#include "GUI/Font/Teletext.h"
 
-#include "KeplerianElements.h"
-#include "Object.h"
-#include "Time.h"
+#include "SolarSystem.h"
 
-class Planet : public Object
+class ViewPlanets
 {
-public:
-   Planet(const char* name_)
-      : Object(name_)
-      , ke_init(name_)
-      , ke_rate(name_)
-   {
-      assert(ke_init.isValid());
-      assert(ke_rate.isValid());
-
-           if (name == "Mercury") { ap_mag = -2.48; }
-      else if (name == "Venus")   { ap_mag = -2.98; }
-      else if (name == "Mars")    { ap_mag = -2.94; }
-      else if (name == "Jupiter") { ap_mag = -2.94; }
-      else if (name == "Saturn")  { ap_mag = -0.55; }
-      else if (name == "Uranus")  { ap_mag = +5.38; }
-      else if (name == "Neptune") { ap_mag = +7.67; }
-   }
-
-   void computePosition(const Time& time)
-   {
-      // Calculate the number of centries since the data set epoch
-      double t_cy = time.getYearsSinceEpoch(KeplerianElements::getEpoch()) / 100.0;
-
-      // Compute Keplerian elements for the given time
-      KeplerianElements elem = ke_rate;
-      elem *= t_cy;
-      elem += ke_init;
-
-      // Calculate a position from the Keplerian element
-      elem.computePosition(pos);
-   }
-
 private:
-   KeplerianElementsInit ke_init;
-   KeplerianElementsRate ke_rate;
+   void drawPlanet(GUI::Frame& frame, const Planet& planet, unsigned x, unsigned y, double scale)
+   {
+      Vector pos = planet.getPosition();
+
+      unsigned px = x + pos.x * scale;
+      unsigned py = y + pos.y * scale;
+
+      frame.fillCircle(STB::RED, px, py, 3);
+      frame.drawText(STB::RED, STB::BLACK, px + 4, py + 4, &GUI::font_teletext18, planet.getName().c_str());
+   }
+
+public:
+   ViewPlanets() = default;
+
+   void render(GUI::Frame&        frame,
+               unsigned           x,
+               unsigned           y,
+               unsigned           width,
+               unsigned           height,
+               const SolarSystem& system,
+               bool               reticule,
+               bool               names)
+   {
+      frame.fillCircle(STB::YELLOW, x, y, 10);
+
+      double scale = width / 20.0;
+
+      for(const auto& planet : system.planet_list)
+      {
+         drawPlanet(frame, planet, x, y, scale);
+      }
+
+      drawPlanet(frame, system.earth, x, y, scale);
+   }
 };
 
-#endif // PLANET_H
+#endif // VIEW_PLANETS_H

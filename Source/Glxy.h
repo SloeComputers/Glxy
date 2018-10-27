@@ -29,7 +29,9 @@
 
 #include "Options.h"
 #include "SolarSystem.h"
+
 #include "ViewPlanisphere.h"
+#include "ViewPlanets.h"
 
 class Glxy
 {
@@ -40,14 +42,52 @@ private:
    GUI::Frame       frame;
    SolarSystem      system;
    ViewPlanisphere  view_planisphere;
+   ViewPlanets      view_planets;
    bool             dynamic{true};
    bool             reticule{true};
    bool             names{true};
    unsigned         mode{1};
 
+   void drawState()
+   {
+      std::string text;
+
+      text = "Date : ";
+      text += system.getDate(/* is_utc */ true);
+      frame.drawText(STB::RED, STB::BLACK, 8, 4, &GUI::font_teletext18, text.c_str());
+
+      text = "UTC  : ";
+      text += system.getTime(/* is_utc */ true);
+      frame.drawText(STB::RED, STB::BLACK, 8, 26, &GUI::font_teletext18, text.c_str());
+
+      text = "Local: ";
+      text += system.getTime(/* is_utc */ false);
+      frame.drawText(STB::RED, STB::BLACK, 8, 48, &GUI::font_teletext18, text.c_str());
+
+      char txt[128];
+
+      Angle latitude = Angle::deg(options.latitude_degs);
+      sprintf(txt, "Lat :  %c%02d\x7f%02d'%04.1f\"",
+              latitude.deg() >= 0 ? 'N' : 'S',
+              ::abs((int)latitude.degrees()),
+              latitude.minutes(),
+              latitude.seconds());
+      frame.drawText(STB::RED, STB::BLACK, options.width - 250, 4, &GUI::font_teletext18, txt);
+
+      Angle longitude = Angle::deg(options.longitude_degs);
+      sprintf(txt, "Lon : %c%03d\x7f%02d'%04.1f\"",
+              longitude.deg() >= 0 ? 'W' : 'E',
+              ::abs((int)longitude.degrees()),
+              longitude.minutes(),
+              longitude.seconds());
+      frame.drawText(STB::RED, STB::BLACK, options.width - 250, 26, &GUI::font_teletext18, txt);
+   }
+
    void doPlot()
    {
       frame.clear(STB::BLACK);
+
+      drawState();
 
       switch(mode)
       {
@@ -61,6 +101,10 @@ private:
          break;
 
       case 2:
+         view_planets.render(frame,
+                             options.width / 2, options.height / 2,
+                             options.width, options.height,
+                             system, reticule, names);
          break;
       }
 

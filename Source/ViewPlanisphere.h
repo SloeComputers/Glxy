@@ -131,39 +131,6 @@ private:
       plot.drawCircleOfDeclination(frame, STB::RGB(0x60, 0x00, 0x00), inner_decl);
    }
 
-   void drawState(GUI::Frame& frame, unsigned width, const SolarSystem& system)
-   {
-      std::string text;
-
-      text = "Date : ";
-      text += system.getDate(/* is_utc */ true);
-      frame.drawText(STB::RED, STB::BLACK, 8, 4, &GUI::font_teletext18, text.c_str());
-
-      text = "UTC  : ";
-      text += system.getTime(/* is_utc */ true);
-      frame.drawText(STB::RED, STB::BLACK, 8, 26, &GUI::font_teletext18, text.c_str());
-
-      text = "Local: ";
-      text += system.getTime(/* is_utc */ false);
-      frame.drawText(STB::RED, STB::BLACK, 8, 48, &GUI::font_teletext18, text.c_str());
-
-      char txt[128];
-
-      sprintf(txt, "Lat :  %c%02d\x7f%02d'%04.1f\"",
-              latitude.deg() >= 0 ? 'N' : 'S',
-              ::abs((int)latitude.degrees()),
-              latitude.minutes(),
-              latitude.seconds());
-      frame.drawText(STB::RED, STB::BLACK, width - 250, 4, &GUI::font_teletext18, txt);
-
-      sprintf(txt, "Lon : %c%03d\x7f%02d'%04.1f\"",
-              longitude.deg() >= 0 ? 'W' : 'E',
-              ::abs((int)longitude.degrees()),
-              longitude.minutes(),
-              longitude.seconds());
-      frame.drawText(STB::RED, STB::BLACK, width - 250, 26, &GUI::font_teletext18, txt);
-   }
-
    void drawStars(GUI::Frame& frame, const STB::Matrix_4x4<double>& trans, bool names, const SolarSystem& system)
    {
       plot.setFont(GUI::font_teletext12, /* horz_align= */ -1, /* vert_align= */ -1);
@@ -260,7 +227,6 @@ public:
                     longitude;
       trans.rotateZ(rot_z.rad());
 
-      drawState(   frame, width, system);
       drawStars(   frame, trans, names, system);
       drawPlanets( frame, trans, names, system);
       drawReticule(frame, reticule, 30, MIN_DECL, Angle::deg(85.0), 30);
