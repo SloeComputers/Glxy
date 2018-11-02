@@ -56,19 +56,40 @@ public:
       switch(attr)
       {
       case Attr::NAME:
-         name = value;
-         is_the_sun = name == "Sol";
+         setName(value);
+         is_the_sun = getName() == "Sol";
          break;
 
-      case Attr::MAG:  ap_mag = strtod(value, nullptr); break;
-      case Attr::X:    pos.x  = strtod(value, nullptr); break;
-      case Attr::Y:    pos.y  = strtod(value, nullptr); break;
-      case Attr::Z:    pos.z  = strtod(value, nullptr); break;
+      case Attr::MAG:  setAparentMagnitude(strtod(value, nullptr)); break;
       case Attr::VX:   vel.x  = strtod(value, nullptr); break;
       case Attr::VY:   vel.y  = strtod(value, nullptr); break;
       case Attr::VZ:   vel.z  = strtod(value, nullptr); break;
       case Attr::DECL: decl   = Angle::rad(strtod(value, nullptr)); break;
       case Attr::RA:   ra     = Angle::rad(strtod(value, nullptr)); break;
+
+      case Attr::X:
+         {
+            Vector pos = getPositionParsec();
+            pos.x  = strtod(value, nullptr);
+            setPositionParsec(pos);
+         }
+         break;
+
+      case Attr::Y:
+         {
+            Vector pos = getPositionParsec();
+            pos.y  = strtod(value, nullptr);
+            setPositionParsec(pos);
+         }
+         break;
+
+      case Attr::Z:
+         {
+            Vector pos = getPositionParsec();
+            pos.z  = strtod(value, nullptr);
+            setPositionParsec(pos);
+         }
+         break;
       }
    }
 
@@ -78,11 +99,12 @@ public:
 
    void debug(FILE* fp = stdout) const
    {
+      Vector pos = getPositionParsec();
       printf("%s: pos = {%g, %g, %g} vel = {%g, %g, %g} ra=%.15f decl=%.15f ap_mag=%f\n",
-             name.c_str(),
+             getName().c_str(),
              pos.x, pos.y, pos.z,
              vel.x, vel.y, vel.z,
-             double(ra.deg()), double(decl.deg()), ap_mag);
+             double(ra.deg()), double(decl.deg()), getAparentMagnitude());
    }
 
 private:

@@ -39,7 +39,7 @@ private:
 
    virtual int startConsoleApp() override
    {
-      options.filename = "/Users/johnh/Data/Astronomy/Stars/hygdata_v3.csv";
+      options.filename = "Data/hygdata_v3.csv";
 
       Glxy glxy{options, PROGRAM};
 

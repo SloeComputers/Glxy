@@ -49,8 +49,8 @@ struct DataSet
 // Keplerian elements and their rates, with respect to the mean ecliptic
 // and equinox of J2000. Valid for the time-interval 1800 AD - 2050 AD.
 //
-//                   a            e                  I                L               long.peri       long.node
-//               Au, Au/Cy        rad, rad/Cy     deg, deg/Cy      deg, deg/Cy         deg, deg/Cy     deg, deg/Cy
+//             a                  e                 I                          L            long.peri       long.node
+//         Au, Au/Cy        rad, rad/Cy        deg, deg/Cy                deg, deg/Cy       deg, deg/Cy     deg, deg/Cy
 
 const std::array<DataSet,8> data_set =
 {

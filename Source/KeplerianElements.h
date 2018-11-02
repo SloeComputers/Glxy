@@ -40,6 +40,12 @@ struct KeplerianElements
    double   w{0.0};   // Longitude of perihelion (degs)
    double   W{0.0};   // Longitude of ascending node (degs)
 
+   //! Ensure angle between -180 and +180 degs
+   static double modulus180(double angle)
+   {
+      return fmod(fmod(angle + 180.0, 360.0) - 180 - 180, 360.0) + 180.0;
+   }
+
    KeplerianElements() = default;
 
    KeplerianElements(double a_, Angle e_, Angle I_, double L_, double w_, double W_)
@@ -54,12 +60,12 @@ struct KeplerianElements
 
    void debug()
    {
-      printf("a = %g Au\n", a);
-      printf("e = %g rad\n", double(e.rad()));
-      printf("I = %g deg\n", double(I.deg()));
-      printf("L = %g deg\n", L);
-      printf("w = %g deg\n", w);
-      printf("W = %g deg\n", W);
+      printf("Eccentricity (e)        = %g rad\n", double(e.rad()));
+      printf("Semi-major axis (a)     = %g Au\n", a);
+      printf("Inclination (i)         = %g deg\n", double(I.deg()));
+      printf("Long. of asc. node ( )  = %g deg\n", W);
+      printf("Long. of perihelion (w) = %g deg\n", w);
+      printf("Longitude (L)           = %g deg [%g}\n", L, modulus180(L));
    }
 
    const KeplerianElements& operator=(const KeplerianElements& that)
@@ -96,30 +102,30 @@ struct KeplerianElements
       W += that.W;
    }
 
-   void computePosition(Vector& pos)
+   void computePosition(Vector& pos, bool debug = false)
    {
       double argument_of_perihelion = w - W;
-      // printf("argument of perihelion = %g\n", argument_of_perihelion);
+      if(debug) printf("Arg. of perihelion      = %g deg\n", argument_of_perihelion);
 
       // Mean anomaly
       double M = L - w;
-      // printf("M = %g\n", M);
+      if (debug) printf("Mean anomaly            = %g deg\n", M);
 
       // Ensure mean anomoly is between -180 and +180 degs
-      M = fmod(fmod(M + 180.0, 360.0) - 180 - 180, 360.0) + 180.0;
-      // printf("M = %g deg\n", M);
+      M = modulus180(M);
+      if (debug) printf("Mean anomaly            = %g deg\n", M);
 
       // Compute the eccentric anomoly
       double E = M + e.deg()*sin_deg(M);
-      // printf("E0 = %g deg\n", E);
+      if (debug) printf("Eccentric anomaly (E0)  = %g deg\n", E);
 
-      while(true)
+      for(unsigned i = 1; true; i++)
       {
          double delta_M = M - (E - e.deg() * sin_deg(E));
          double delta_E = delta_M / (1.0 - e.rad() * cos_deg(E));
          E = E + delta_E;
+         if (debug) printf("Eccentric anomaly (E%u)  = %g deg\n", i, E);
          if (fabs(delta_E) < 1E-6) break;
-         // printf("E%d = %g deg\n", i, E);
       }
 
       // Compute the planet's heliocentric co-ordinates
@@ -138,6 +144,9 @@ struct KeplerianElements
       trans.setIdentity();
       trans.rotateX(-getObliquity().rad());
       pos = trans.transformPos(pos);
+      if (debug) printf("Position (equitorial)   = (%.4f,%.4f,%.4f) Au\n", pos.x, pos.y, pos.z);
+      if (debug) printf("Longitude (equitorial)  = %g deg\n",
+                        (double)Angle::rad(atan2(pos.y, pos.x)).deg());
    }
 
    static double sin_deg(double angle)

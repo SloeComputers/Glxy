@@ -33,10 +33,10 @@ class ViewPlanets
 private:
    void drawPlanet(GUI::Frame& frame, const Planet& planet, unsigned x, unsigned y, double scale)
    {
-      Vector pos = planet.getPosition();
+      Vector pos = planet.getPositionAu();
 
       unsigned px = x + pos.x * scale;
-      unsigned py = y + pos.y * scale;
+      unsigned py = y - pos.y * scale;
 
       frame.fillCircle(STB::RED, px, py, 3);
       frame.drawText(STB::RED, STB::BLACK, px + 4, py + 4, &GUI::font_teletext18, planet.getName().c_str());

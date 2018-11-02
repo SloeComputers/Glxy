@@ -40,16 +40,16 @@ public:
       assert(ke_init.isValid());
       assert(ke_rate.isValid());
 
-           if (name == "Mercury") { ap_mag = -2.48; }
-      else if (name == "Venus")   { ap_mag = -2.98; }
-      else if (name == "Mars")    { ap_mag = -2.94; }
-      else if (name == "Jupiter") { ap_mag = -2.94; }
-      else if (name == "Saturn")  { ap_mag = -0.55; }
-      else if (name == "Uranus")  { ap_mag = +5.38; }
-      else if (name == "Neptune") { ap_mag = +7.67; }
+           if (getName() == "Mercury") { setAparentMagnitude(-2.48); }
+      else if (getName() == "Venus")   { setAparentMagnitude(-2.98); }
+      else if (getName() == "Mars")    { setAparentMagnitude(-2.94); }
+      else if (getName() == "Jupiter") { setAparentMagnitude(-2.94); }
+      else if (getName() == "Saturn")  { setAparentMagnitude(-0.55); }
+      else if (getName() == "Uranus")  { setAparentMagnitude(+5.38); }
+      else if (getName() == "Neptune") { setAparentMagnitude(+7.67); }
    }
 
-   void computePosition(const Time& time)
+   void computePosition(const Time& time, bool debug = false)
    {
       // Calculate the number of centries since the data set epoch
       double t_cy = time.getYearsSinceEpoch(KeplerianElements::getEpoch()) / 100.0;
@@ -59,8 +59,14 @@ public:
       elem *= t_cy;
       elem += ke_init;
 
+      if (debug)
+         elem.debug();
+
       // Calculate a position from the Keplerian element
-      elem.computePosition(pos);
+      Vector pos;
+      elem.computePosition(pos, debug);
+
+      setPositionAu(pos);
    }
 
 private:

@@ -73,6 +73,19 @@ public:
       frame.drawCircle(rgb, origin.x, origin.y, radius);
    }
 
+   //! Draw a circle of declination
+   void fillCircleOfDeclination(GUI::Frame& frame, STB::Colour rgb, Angle decl)
+   {
+      Pixel origin;
+      polarToXY(0.0, Angle::deg(90.0), origin);
+
+      Pixel point_on_circle;
+      polarToXY(0.0, decl, point_on_circle);
+
+      unsigned radius = (point_on_circle - origin).getMagnitude();
+      frame.fillCircle(rgb, origin.x, origin.y, radius);
+   }
+
    void drawRadial(GUI::Frame& frame, STB::Colour rgb, Angle right_ascension, Angle from_decl, Angle to_decl)
    {
       Pixel outer, inner;

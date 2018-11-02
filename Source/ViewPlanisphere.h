@@ -46,9 +46,28 @@ private:
    Angle       longitude;
    PolarPlot   plot;
 
+   //! Compute polar diections of one point from another
+   void computeDir(const Vector&                  to_pos,
+                   const Vector&                  from_pos,
+                   const STB::Matrix_4x4<double>& trans,
+                   Angle&                         declination,
+                   Angle&                         right_ascension)
+   {
+      Vector dir = to_pos - from_pos;
+      Vector pos = trans.transformPos(dir);
+
+      double radius   = sqrt(pos.x * pos.x + pos.y * pos.y);
+      declination     = Angle::rad(atan2(pos.z, radius));
+      right_ascension = Angle::rad(-atan2(pos.y, pos.x));
+   }
+
    //!
    void drawReticule(GUI::Frame& frame,
-                     bool reticule, unsigned step_ra, Angle outer_decl, Angle inner_decl, unsigned step_decl)
+                     bool        reticule,
+                     unsigned    step_ra,
+                     Angle       outer_decl,
+                     Angle       inner_decl,
+                     unsigned    step_decl)
    {
       // Draw heading scale
       for(signed i = 0; i < 360; i += 5)
@@ -131,7 +150,10 @@ private:
       plot.drawCircleOfDeclination(frame, STB::RGB(0x60, 0x00, 0x00), inner_decl);
    }
 
-   void drawStars(GUI::Frame& frame, const STB::Matrix_4x4<double>& trans, bool names, const SolarSystem& system)
+   void drawStars(GUI::Frame&                    frame,
+                  const STB::Matrix_4x4<double>& trans,
+                  bool                           names,
+                  const SolarSystem&             system)
    {
       plot.setFont(GUI::font_teletext12, /* horz_align= */ -1, /* vert_align= */ -1);
 
@@ -140,9 +162,28 @@ private:
 
       // printf("min = %g max = %g\n", min_mag, max_mag);
 
+      Angle  declination;
+      Angle  right_ascension;
+
       for(const auto& star : system.star_db)
       {
-         if (!star.isTheSun())
+         if (star.isTheSun())
+         {
+             computeDir(star.getPositionParsec(),
+                        system.earth.getPositionParsec(),
+                        trans,
+                        declination,
+                        right_ascension);
+
+            PolarPlot::Pixel pixel;
+
+            if (plot.polarToXY(right_ascension, declination, pixel))
+            {
+               plot.fillCircleOfDeclination(frame, STB::RGB(0x20, 0x40, 0xB0), MIN_DECL);
+               plot.fillCircle(frame, STB::RGB(0xFF, 0xFF, 0xFF), right_ascension, declination, 20);
+            }
+         }
+         else
          {
             float mag = star.getAparentMagnitude();
             if (mag > 7)     mag = 7;
@@ -163,37 +204,50 @@ private:
 
             STB::Colour col = STB::GREY(m*255);
 
-            const Vector& abs_pos = star.getPosition();
-            Vector pos = trans.transformPos(abs_pos);
-
-            double proj_radius     = sqrt(pos.x * pos.x + pos.y * pos.y);
-            Angle  declination     = Angle::rad(atan2(pos.z, proj_radius));
-            Angle  right_ascension = Angle::rad(-atan2(pos.y, pos.x));
+            computeDir(star.getPositionParsec(),
+                       system.earth.getPositionParsec(),
+                       trans,
+                       declination,
+                       right_ascension);
 
             if (plot.fillCircle(frame, col, right_ascension, declination, m * 8))
             {
-               if (names) plot.drawText(frame, STB::RED, right_ascension, declination, star.getName());
+               if (names)
+               {
+                  plot.drawText(frame, STB::RED, right_ascension, declination, star.getName());
+               }
             }
          }
       }
    }
 
-   void drawPlanets(GUI::Frame& frame, const STB::Matrix_4x4<double>& trans, bool names, const SolarSystem& system)
+   void drawPlanets(GUI::Frame&                    frame,
+                    const STB::Matrix_4x4<double>& trans,
+                    bool                           names,
+                    const SolarSystem&             system)
    {
-      plot.setFont(GUI::font_teletext12, /* horz_align= */ -1, /* vert_align= */ -1);
+      if (names)
+      {
+         plot.setFont(GUI::font_teletext12, /* horz_align= */ -1, /* vert_align= */ -1);
+      }
 
       for(const auto& planet : system.planet_list)
       {
-         const Vector& abs_pos = planet.getPosition();
-         Vector pos = trans.transformPos(abs_pos);
+         Angle  declination;
+         Angle  right_ascension;
 
-         double proj_radius     = sqrt(pos.x * pos.x + pos.y * pos.y);
-         Angle  declination     = Angle::rad(atan2(pos.z, proj_radius));
-         Angle  right_ascension = Angle::rad(-atan2(pos.y, pos.x));
+         computeDir(planet.getPositionAu(),
+                    system.earth.getPositionAu(),
+                    trans,
+                    declination,
+                    right_ascension);
 
          if (plot.fillCircle(frame, STB::YELLOW, right_ascension, declination, 10))
          {
-            if (names) plot.drawText(frame, STB::YELLOW, right_ascension, declination, planet.getName());
+            if (names)
+            {
+               plot.drawText(frame, STB::YELLOW, right_ascension, declination, planet.getName());
+            }
          }
       }
    }
