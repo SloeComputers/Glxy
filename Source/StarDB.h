@@ -46,8 +46,12 @@ public:
 
       document.readHeader();
 
+      document.requireField("bayer", Attr::BAYER);
+      document.requireField("con", Attr::CON);
+      document.requireField("spect", Attr::SPECT);
       document.requireField("proper", Attr::NAME);
       document.requireField("mag", Attr::MAG);
+      document.requireField("absmag", Attr::ABSMAG);
 
       document.requireField("x", Attr::X);
       document.requireField("y", Attr::Y);
