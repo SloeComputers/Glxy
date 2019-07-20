@@ -1,7 +1,2 @@
-*.o
-*.a
-*.bc
-*.tgz
 .DS_Store
-.sconsign.dblite
-glxy
+build
