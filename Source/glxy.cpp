@@ -29,8 +29,6 @@
 #define  LINK            "https://github.com/AnotherJohnH/"
 #define  COPYRIGHT_YEAR  "2018"
 #define  AUTHOR          "John D. Haughton"
-#define  VERSION         PROJ_VERSION
-
 
 class GlxyApp : public STB::ConsoleApp
 {
@@ -47,15 +45,14 @@ private:
    }
 
 public:
-   GlxyApp(int argc, const char* argv[])
-      : ConsoleApp(PROGRAM, DESCRIPTION, LINK, AUTHOR, VERSION, COPYRIGHT_YEAR)
+   GlxyApp()
+      : ConsoleApp(PROGRAM, DESCRIPTION, LINK, AUTHOR, COPYRIGHT_YEAR)
    {
-      parseArgsAndStart(argc, argv);
    }
 };
 
 
 int main(int argc, const char* argv[])
 {
-   GlxyApp(argc, argv);
+   return GlxyApp().parseArgsAndStart(argc, argv);
 }
