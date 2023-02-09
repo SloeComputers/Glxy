@@ -26,18 +26,10 @@ project(Glxy
         VERSION   0.0.0
         LANGUAGES C CXX ASM)
 
-set(author  John D. Haughton)
+add_subdirectory(Platform)
 
-set(source  Source/glxy.cpp Source/KeplerianElements.cpp)
-set(binary  glxy)
+add_executable(glxy Source/glxy.cpp Source/KeplerianElements.cpp)
 
-#-------------------------------------------------------------------------------
-
-include(Platform/build.cmake NO_POLICY_SCOPE)
-
-#-------------------------------------------------------------------------------
-
-add_executable(${binary} ${source})
-target_link_libraries(${binary} ${PLT_libs})
+target_link_libraries(glxy GUI STB PLT)
 
 install(TARGETS ${binary} RUNTIME DESTINATION bin)

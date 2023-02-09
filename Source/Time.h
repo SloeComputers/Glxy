@@ -96,7 +96,7 @@ public:
 
       char text[32];
 
-      sprintf(text, "%02u:%02u:%02u", getHour(), getMinute(), getSecond());
+      snprintf(text, sizeof(text), "%02u:%02u:%02u", getHour(), getMinute(), getSecond());
 
       return text;
    }

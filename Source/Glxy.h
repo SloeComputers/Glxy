@@ -67,7 +67,7 @@ private:
       char txt[128];
 
       Angle latitude = Angle::deg(options.latitude_degs);
-      sprintf(txt, "Lat :  %c%02d\x7f%02d'%04.1f\"",
+      snprintf(txt, sizeof(txt), "Lat :  %c%02d\x7f%02d'%04.1f\"",
               latitude.deg() >= 0 ? 'N' : 'S',
               ::abs((int)latitude.degrees()),
               latitude.minutes(),
@@ -75,7 +75,7 @@ private:
       frame.drawText(STB::RED, STB::BLACK, options.width - 250, 4, &GUI::font_teletext18, txt);
 
       Angle longitude = Angle::deg(options.longitude_degs);
-      sprintf(txt, "Lon : %c%03d\x7f%02d'%04.1f\"",
+      snprintf(txt, sizeof(txt), "Lon : %c%03d\x7f%02d'%04.1f\"",
               longitude.deg() >= 0 ? 'W' : 'E',
               ::abs((int)longitude.degrees()),
               longitude.minutes(),

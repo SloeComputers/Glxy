@@ -27,9 +27,6 @@
 
 class Object
 {
-private:
-   static constexpr double AUS_PER_PARSEC = 2.06265e5;
-
 public:
    Object() = default;
 
@@ -54,9 +51,10 @@ public:
    const Vector getPositionParsec() const { return pos_au / AUS_PER_PARSEC; }
 
 private:
-   std::string name{};
-   float       ap_mag{0.0};
-   Vector      pos_au{0.0, 0.0, 0.0};
+   std::string  name{};
+   float        ap_mag{0.0};
+   Vector       pos_au{0.0, 0.0, 0.0};
+   const double AUS_PER_PARSEC {2.06265e5};
 };
 
 #endif // OBJECT_H
