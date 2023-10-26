@@ -20,11 +20,11 @@
 #  SOFTWARE.
 #-------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.11.4)
+cmake_minimum_required(VERSION 3.19.1)
 
 project(Glxy
-        VERSION   0.0.0
-        LANGUAGES C CXX ASM)
+        LANGUAGES C CXX ASM
+        VERSION   0.0.0)
 
 add_subdirectory(Platform)
 
@@ -32,4 +32,4 @@ add_executable(glxy Source/glxy.cpp Source/KeplerianElements.cpp)
 
 target_link_libraries(glxy GUI STB PLT)
 
-install(TARGETS ${binary} RUNTIME DESTINATION bin)
+install(TARGETS glxy RUNTIME DESTINATION bin)
