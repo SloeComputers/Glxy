@@ -14,11 +14,6 @@
 class Time
 {
 public:
-   static const unsigned SECONDS_PER_MINUTE = 60;
-   static const unsigned MINUTES_PER_HOUR   = 60;
-   static const unsigned HOURS_PER_DAY      = 24;
-   static const unsigned SECONDS_PER_DAY    = HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
-
    Time(bool utc_)
       : utc(utc_)
    {
@@ -161,6 +156,11 @@ public:
       setDate(1900 + tm.tm_year, tm.tm_yday);
       setTime(tm.tm_hour, tm.tm_min, tm.tm_sec);
    }
+
+   static const unsigned SECONDS_PER_MINUTE = 60;
+   static const unsigned MINUTES_PER_HOUR   = 60;
+   static const unsigned HOURS_PER_DAY      = 24;
+   static const unsigned SECONDS_PER_DAY    = HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
 
 private:
    const bool utc{false};

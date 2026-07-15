@@ -7,33 +7,30 @@
 
 #include "Glxy.h"
 
-#define  PROGRAM         "Glxy"
 #define  DESCRIPTION     "Star database viewer"
-#define  LINK            "https://github.com/AnotherJohnH/"
 #define  COPYRIGHT_YEAR  "2018"
 #define  AUTHOR          "John D. Haughton"
 
 class GlxyApp : public STB::ConsoleApp
 {
-private:
-   Options options;
+public:
+   GlxyApp()
+      : ConsoleApp(PDK_PROJ_NAME, DESCRIPTION, PDK_PROJ_URL, AUTHOR, COPYRIGHT_YEAR)
+   {
+   }
 
+private:
    virtual int startConsoleApp() override
    {
       options.filename = "Data/hygdata_v3.csv";
 
-      Glxy glxy{options, PROGRAM};
+      Glxy glxy{options, PDK_PROJ_NAME};
 
       return glxy.eventLoop();
    }
 
-public:
-   GlxyApp()
-      : ConsoleApp(PROGRAM, DESCRIPTION, LINK, AUTHOR, COPYRIGHT_YEAR)
-   {
-   }
+   Options options;
 };
-
 
 int main(int argc, const char* argv[])
 {

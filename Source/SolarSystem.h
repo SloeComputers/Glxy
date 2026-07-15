@@ -14,26 +14,6 @@
 class SolarSystem
 {
 public:
-   StarDB star_db;
-   Earth  earth;
-
-   std::array<Planet,7> planet_list =
-   {
-      "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Neptune", "Uranus"
-   };
-
-private:
-   void update()
-   {
-      for(auto& planet : planet_list)
-      {
-         planet.computePosition(earth.utc);
-      }
-
-      earth.computePosition(earth.utc);
-   }
-
-public:
    SolarSystem(const std::string& filename)
    {
       star_db.load(filename);
@@ -82,6 +62,25 @@ public:
    {
       earth.adjustTime(delta_hour, delta_minute);
       update();
+   }
+
+   StarDB star_db;
+   Earth  earth;
+
+   std::array<Planet,7> planet_list =
+   {
+      "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Neptune", "Uranus"
+   };
+
+private:
+   void update()
+   {
+      for(auto& planet : planet_list)
+      {
+         planet.computePosition(earth.utc);
+      }
+
+      earth.computePosition(earth.utc);
    }
 };
 

@@ -1,0 +1,5 @@
+theme: jekyll-theme-slate
+title: Glxy
+description: A Sloe Computers project
+exclude:
+   - PDK

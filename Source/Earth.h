@@ -17,9 +17,6 @@ public:
       : Planet{"Earth"}
    {}
 
-   Time utc{/* is_utc */ true};
-   Time local_time{/* is_utc */ false};
-
    //! Set the date and time to now
    void setNow()
    {
@@ -47,10 +44,10 @@ public:
    {
       // XXX  this will drift as we move further from 2018
       // TODO should calculate days since the reference date
-      (void) ref_year;
-      (void) ref_day;
+      (void) REF_YEAR;
+      (void) REF_DAY;
  
-      return ref_ecliptic_longitude + Angle::turn(double(utc.getDayOfYear()) / utc.getDaysPerYear());
+      return REF_ECLIPTIC_LONGITUDE + Angle::turn(double(utc.getDayOfYear()) / utc.getDaysPerYear());
    }
 
    //! Get the current rotation of the Greenwich Meridian
@@ -63,12 +60,10 @@ public:
       return Angle::turn(double(seconds_since_midnight) / Time::SECONDS_PER_DAY);
    }
 
-private:
-   // Reference for 1st Jan 2018 at 00:00
-   const unsigned ref_year = 2018;
-   const unsigned ref_day  = 0;
-   const Angle    ref_ecliptic_longitude{280.265, Angle::Unit::DEG};
+   Time utc{/* is_utc */ true};
+   Time local_time{/* is_utc */ false};
 
+private:
    void setDate(unsigned year_, signed yday_)
    {
       utc.setDate(year_, yday_);
@@ -80,5 +75,10 @@ private:
       utc.setTime(hour_, minute_);
       local_time.setTime(hour_, minute_);
    }
+
+   // Reference for 1st Jan 2018 at 00:00
+   const unsigned REF_YEAR = 2018;
+   const unsigned REF_DAY  = 0;
+   const Angle    REF_ECLIPTIC_LONGITUDE{280.265, Angle::Unit::DEG};
 };
 

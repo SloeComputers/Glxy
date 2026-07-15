@@ -4,15 +4,13 @@ Star database viewer.
 
 ## Status
 
-[![Build Status](https://travis-ci.org/AnotherJohnH/Glxy.svg?branch=master)](https://travis-ci.org/AnotherJohnH/Glxy)
+[![Build Status](https://github.com/SloeComputers/Glxy/actions/workflows/build_on_push.yml/badge.svg)](https://github.com/SloeComputers/Glxy/actions/workflows/build_on_push.yml)
 
 ## How to build
 
-Build using cmake.
+Build using cmake...
 
-```
-mkdir build_native
-cd build_native
-cmake ..
-make
-```
+    mkdir build
+    cd build
+    cmake ..
+    make
