@@ -108,7 +108,7 @@ public:
       unsigned start = 0;
       for(unsigned m=0; m<12; m++)
       {
-         unsigned end = start + days_in_month[m];
+         signed end = start + days_in_month[m];
          if ((m == 1) && isLeapYear()) end++;
          if (yday < end)
          {
